@@ -1,7 +1,11 @@
 import { useState } from "react"
 import { Chessboard } from "react-chessboard"
 import { Chess } from "chess.js"
-import { getControlMap, getControlledSquares } from "./utils/chesshelpers"
+import {
+  getControlMap,
+  getControlledSquares,
+  type ControlMap,
+} from "./utils/chesshelpers"
 function App() {
   const [pgn, setPgn] = useState("")
   const [chess] = useState(new Chess())
@@ -9,6 +13,7 @@ function App() {
   const [moves, setMoves] = useState<string[]>([])
   const [currentMove, setCurrentMove] = useState(0)
   const [controlledSquares, setControlledSquares] = useState<string[]>([])
+  const [controlMap, setControlMap] = useState<ControlMap>({})
 
   function goToMove(moveNumber: number, moveList: string[]) {
   const replayChess = new Chess()
@@ -18,6 +23,17 @@ function App() {
   }
 
   setPosition(replayChess.fen())
+
+  const newControlMap = getControlMap(replayChess, "w")
+setControlMap(newControlMap)
+}
+
+const squareStyles: { [square: string]: React.CSSProperties } = {}
+
+for (const square of Object.keys(controlMap)) {
+  squareStyles[square] = {
+    backgroundColor: "rgba(0, 100, 255, 0.35)",
+  }
 }
 
   return (
@@ -33,12 +49,10 @@ function App() {
       <button
         onClick={() => {
           const newChess = new Chess()
-          console.log(Object.getOwnPropertyNames(Object.getPrototypeOf(newChess)))
 
-          newChess.loadPgn(pgn)
+        newChess.loadPgn(pgn)
 
-const controlMap = getControlMap(newChess, "w")
-console.log(controlMap)
+
 
 setControlledSquares(getControlledSquares(newChess, "w"))
           
@@ -58,7 +72,7 @@ goToMove(0, gameMoves)
       <p>{position}</p>
       <p>Moves loaded: {moves.length}</p>
       <p>Current move: {currentMove}</p>
-      <p>Controlled squares: {controlledSquares.length}</p>
+      <p>Controlled squares: {Object.keys(controlMap).length}</p>
       
 <button
   onClick={() => {
@@ -103,9 +117,11 @@ goToMove(0, gameMoves)
 </button>
 
       <Chessboard
-        key={position}
-        position={position}
-      />
+  key={position}
+  position={position}
+  customSquareStyles={squareStyles}
+/>
+      
     </div>
   )
 }

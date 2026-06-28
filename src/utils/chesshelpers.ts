@@ -3,6 +3,7 @@ import { Chess } from "chess.js"
 export type Attack = {
   from: string
   piece: string
+  colour: "w" | "b"
 }
 
 export type ControlMap = {
@@ -12,28 +13,61 @@ export type ControlMap = {
 export function getControlMap(game: Chess, colour: "w" | "b"): ControlMap {
   const control: ControlMap = {}
 
-  const files = ["a", "b", "c", "d", "e", "f", "g", "h"]
+  const board = game.board()
 
-  for (let rank = 1; rank <= 8; rank++) {
-    for (const file of files) {
-      const square = `${file}${rank}`
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const piece = board[row][col]
 
-      const attackers = game.attackers(square as any, colour)
+      if (!piece) continue
 
-      if (attackers.length === 0) continue
+      if (piece.color !== colour) continue
 
-      control[square] = []
+      if (piece.type !== "p") continue
 
-      for (const attacker of attackers) {
-        const piece = game.get(attacker)
+      const fromFile = String.fromCharCode(97 + col)
+const fromRank = 8 - row
+const fromSquare = `${fromFile}${fromRank}`
 
-        if (!piece) continue
+      const attackRow = row - 1
+const attackCol = col - 1
 
-        control[square].push({
-          from: attacker,
-          piece: piece.type,
-        })
-      }
+if (attackRow >= 0 && attackCol >= 0) {
+  const file = String.fromCharCode(97 + attackCol)
+  const rank = 8 - attackRow
+
+  const target = `${file}${rank}`
+
+if (!control[target]) {
+  control[target] = []
+}
+
+control[target].push({
+  from: fromSquare,
+  piece: "p",
+  colour,
+})
+}
+
+const rightAttackCol = col + 1
+
+if (attackRow >= 0 && rightAttackCol < 8) {
+  const file = String.fromCharCode(97 + rightAttackCol)
+  const rank = 8 - attackRow
+
+  const target = `${file}${rank}`
+
+if (!control[target]) {
+  control[target] = []
+}
+
+control[target].push({
+  from: fromSquare,
+  piece: "p",
+  colour,
+})
+}
+
     }
   }
 
