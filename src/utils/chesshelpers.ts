@@ -39,6 +39,13 @@ const knightOffsets = [
   [2, 1],
 ]
 
+const bishopDirections = [
+  [-1, -1],
+  [-1, 1],
+  [1, -1],
+  [1, 1],
+]
+
 function addPawnAttacks(
   control: ControlMap,
   row: number,
@@ -95,15 +102,43 @@ function addKnightAttacks(
     addAttack(control, target, fromSquare, "n", colour)
   }
 }
+  
 
 function addBishopAttacks(
+  game: Chess,
   control: ControlMap,
   row: number,
   col: number,
   fromSquare: string,
   colour: "w" | "b"
 ) {
+  for (const [rowStep, colStep] of bishopDirections) {
 
+    let currentRow = row + rowStep
+    let currentCol = col + colStep
+
+    while (
+      currentRow >= 0 &&
+      currentRow < 8 &&
+      currentCol >= 0 &&
+      currentCol < 8
+    ) {
+
+      const file = String.fromCharCode(97 + currentCol)
+const rank = 8 - currentRow
+const target = `${file}${rank}`
+
+addAttack(control, target, fromSquare, "b", colour)
+
+// Stop sliding if we hit a piece
+if (game.board()[currentRow][currentCol]) {
+  break
+}
+
+currentRow += rowStep
+currentCol += colStep
+    }
+  }
 }
 
 
@@ -136,7 +171,7 @@ export function getControlMap(game: Chess, colour: "w" | "b"): ControlMap {
 
 
         case "b": {
-  addBishopAttacks(control, row, col, fromSquare, colour)
+  addBishopAttacks(game, control, row, col, fromSquare, colour)
   break
 }
       }

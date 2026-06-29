@@ -16,6 +16,7 @@ function App() {
   const [controlMap, setControlMap] = useState<ControlMap>({})
   const [showPawns, setShowPawns] = useState(true)
   const [showKnights, setShowKnights] = useState(true)
+  const [showBishops, setShowBishops] = useState(true)
 
   function goToMove(moveNumber: number, moveList: string[]) {
   const replayChess = new Chess()
@@ -38,6 +39,7 @@ for (const square of Object.keys(controlMap)) {
   const shouldShow = attacks.some((attack) => {
     if (attack.piece === "p" && showPawns) return true
     if (attack.piece === "n" && showKnights) return true
+    if (attack.piece === "b" && showBishops) return true
 
     return false
   })
@@ -105,6 +107,16 @@ goToMove(0, gameMoves)
     />
     Knights
   </label>
+
+<label style={{ marginLeft: "20px" }}>
+  <input
+    type="checkbox"
+    checked={showBishops}
+    onChange={(e) => setShowBishops(e.target.checked)}
+  />
+  Bishops
+</label>
+
 </div>
       
 <button
