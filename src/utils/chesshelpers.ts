@@ -39,6 +39,74 @@ const knightOffsets = [
   [2, 1],
 ]
 
+function addPawnAttacks(
+  control: ControlMap,
+  row: number,
+  col: number,
+  fromSquare: string,
+  colour: "w" | "b"
+) {
+  const direction = colour === "w" ? -1 : 1
+  const attackRow = row + direction
+
+  const leftCol = col - 1
+  if (attackRow >= 0 && attackRow < 8 && leftCol >= 0) {
+    const file = String.fromCharCode(97 + leftCol)
+    const rank = 8 - attackRow
+    const target = `${file}${rank}`
+
+    addAttack(control, target, fromSquare, "p", colour)
+  }
+
+  const rightCol = col + 1
+  if (attackRow >= 0 && attackRow < 8 && rightCol < 8) {
+    const file = String.fromCharCode(97 + rightCol)
+    const rank = 8 - attackRow
+    const target = `${file}${rank}`
+
+    addAttack(control, target, fromSquare, "p", colour)
+  }
+}
+
+function addKnightAttacks(
+  control: ControlMap,
+  row: number,
+  col: number,
+  fromSquare: string,
+  colour: "w" | "b"
+) {
+  for (const [rowOffset, colOffset] of knightOffsets) {
+    const targetRow = row + rowOffset
+    const targetCol = col + colOffset
+
+    if (
+      targetRow < 0 ||
+      targetRow > 7 ||
+      targetCol < 0 ||
+      targetCol > 7
+    ) {
+      continue
+    }
+
+    const file = String.fromCharCode(97 + targetCol)
+    const rank = 8 - targetRow
+    const target = `${file}${rank}`
+
+    addAttack(control, target, fromSquare, "n", colour)
+  }
+}
+
+function addBishopAttacks(
+  control: ControlMap,
+  row: number,
+  col: number,
+  fromSquare: string,
+  colour: "w" | "b"
+) {
+
+}
+
+
 export function getControlMap(game: Chess, colour: "w" | "b"): ControlMap {
   const control: ControlMap = {}
 
@@ -57,55 +125,20 @@ export function getControlMap(game: Chess, colour: "w" | "b"): ControlMap {
 
       switch (piece.type) {
         case "p": {
-          const direction = colour === "w" ? -1 : 1
-          const attackRow = row + direction
-
-          const leftCol = col - 1
-          if (attackRow >= 0 && attackRow < 8 && leftCol >= 0) {
-            const file = String.fromCharCode(97 + leftCol)
-            const rank = 8 - attackRow
-            const target = `${file}${rank}`
-
-            addAttack(control, target, fromSquare, "p", colour)
-          }
-
-          const rightCol = col + 1
-          if (attackRow >= 0 && attackRow < 8 && rightCol < 8) {
-            const file = String.fromCharCode(97 + rightCol)
-            const rank = 8 - attackRow
-            const target = `${file}${rank}`
-
-            addAttack(control, target, fromSquare, "p", colour)
-          }
-
+          addPawnAttacks(control, row, col, fromSquare, colour)
           break
         }
 
-                case "n": {
-                    for (const [rowOffset, colOffset] of knightOffsets) {
-  const targetRow = row + rowOffset
-  const targetCol = col + colOffset
-
-  if (
-    targetRow < 0 ||
-    targetRow > 7 ||
-    targetCol < 0 ||
-    targetCol > 7
-  ) {
-    continue
-  }
-
-  const file = String.fromCharCode(97 + targetCol)
-  const rank = 8 - targetRow
-  const target = `${file}${rank}`
-
-  addAttack(control, target, fromSquare, "n", colour)
+        case "n": {
+  addKnightAttacks(control, row, col, fromSquare, colour)
+  break
 }
 
-break
-          
-          
-        }
+
+        case "b": {
+  addBishopAttacks(control, row, col, fromSquare, colour)
+  break
+}
       }
     }
   }

@@ -14,6 +14,8 @@ function App() {
   const [currentMove, setCurrentMove] = useState(0)
   const [controlledSquares, setControlledSquares] = useState<string[]>([])
   const [controlMap, setControlMap] = useState<ControlMap>({})
+  const [showPawns, setShowPawns] = useState(true)
+  const [showKnights, setShowKnights] = useState(true)
 
   function goToMove(moveNumber: number, moveList: string[]) {
   const replayChess = new Chess()
@@ -31,6 +33,17 @@ setControlMap(newControlMap)
 const squareStyles: { [square: string]: React.CSSProperties } = {}
 
 for (const square of Object.keys(controlMap)) {
+  const attacks = controlMap[square]
+
+  const shouldShow = attacks.some((attack) => {
+    if (attack.piece === "p" && showPawns) return true
+    if (attack.piece === "n" && showKnights) return true
+
+    return false
+  })
+
+  if (!shouldShow) continue
+
   squareStyles[square] = {
     backgroundColor: "rgba(0, 100, 255, 0.35)",
   }
@@ -73,6 +86,26 @@ goToMove(0, gameMoves)
       <p>Moves loaded: {moves.length}</p>
       <p>Current move: {currentMove}</p>
       <p>Controlled squares: {Object.keys(controlMap).length}</p>
+
+      <div style={{ marginBottom: "10px" }}>
+  <label>
+    <input
+      type="checkbox"
+      checked={showPawns}
+      onChange={(e) => setShowPawns(e.target.checked)}
+    />
+    Pawns
+  </label>
+
+  <label style={{ marginLeft: "20px" }}>
+    <input
+      type="checkbox"
+      checked={showKnights}
+      onChange={(e) => setShowKnights(e.target.checked)}
+    />
+    Knights
+  </label>
+</div>
       
 <button
   onClick={() => {
