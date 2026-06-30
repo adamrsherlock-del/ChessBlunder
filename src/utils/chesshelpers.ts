@@ -46,6 +46,13 @@ const bishopDirections = [
   [1, 1],
 ]
 
+const rookDirections = [
+  [-1, 0],
+  [1, 0],
+  [0, -1],
+  [0, 1],
+]
+
 function addPawnAttacks(
   control: ControlMap,
   row: number,
@@ -102,7 +109,19 @@ function addKnightAttacks(
     addAttack(control, target, fromSquare, "n", colour)
   }
 }
-  
+
+function addSlidingAttacks(
+  game: Chess,
+  control: ControlMap,
+  row: number,
+  col: number,
+  fromSquare: string,
+  piece: string,
+  colour: "w" | "b",
+  directions: number[][]
+) {
+}
+
 
 function addBishopAttacks(
   game: Chess,
