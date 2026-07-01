@@ -20,6 +20,9 @@ function App() {
     const [showRooks, setShowRooks] = useState(true)
     const [showQueens, setShowQueens] = useState(true)
     const [showKings, setShowKings] = useState(true)
+    const [showWhite, setShowWhite] = useState(true)
+    const [showBlack, setShowBlack] = useState(true)
+    const [flipBoard, setFlipBoard] = useState(false)
 
     function goToMove(moveNumber: number, moveList: string[]) {
         const replayChess = new Chess()
@@ -30,8 +33,13 @@ function App() {
 
         setPosition(replayChess.fen())
 
-        const newControlMap = getControlMap(replayChess, "w")
-        setControlMap(newControlMap)
+        const whiteControl = getControlMap(replayChess, "w")
+        const blackControl = getControlMap(replayChess, "b")
+
+        setControlMap({
+            ...whiteControl,
+            ...blackControl,
+        })
     }
 
     const squareStyles: { [square: string]: React.CSSProperties } = {}
@@ -40,6 +48,9 @@ function App() {
         const attacks = controlMap[square]
 
         const shouldShow = attacks.some((attack) => {
+            if (attack.colour === "w" && !showWhite) return false
+            if (attack.colour === "b" && !showBlack) return false
+
             if (attack.piece === "p" && showPawns) return true
             if (attack.piece === "n" && showKnights) return true
             if (attack.piece === "b" && showBishops) return true
@@ -150,6 +161,33 @@ function App() {
                     Kings
                 </label>
 
+                <label style={{ marginLeft: "20px" }}>
+                    <input
+                        type="checkbox"
+                        checked={showWhite}
+                        onChange={(e) => setShowWhite(e.target.checked)}
+                    />
+                    White
+                </label>
+
+                <label style={{ marginLeft: "20px" }}>
+                    <input
+                        type="checkbox"
+                        checked={showBlack}
+                        onChange={(e) => setShowBlack(e.target.checked)}
+                    />
+                    Black
+                </label>
+
+                <label style={{ marginLeft: "20px" }}>
+                    <input
+                        type="checkbox"
+                        checked={flipBoard}
+                        onChange={(e) => setFlipBoard(e.target.checked)}
+                    />
+                    Flip Board
+                </label>
+
             </div>
 
             <button
@@ -197,6 +235,7 @@ function App() {
             <Chessboard
                 key={position}
                 position={position}
+                boardOrientation={flipBoard ? "black" : "white"}
                 customSquareStyles={squareStyles}
             />
 
