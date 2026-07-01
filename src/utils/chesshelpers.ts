@@ -304,6 +304,9 @@ export function getControlMap(game: Chess, colour: "w" | "b"): ControlMap {
 }
 
 // Temporary compatibility function
-export function getControlledSquares(game: Chess, colour: "w" | "b") {
+export function getControlledSquares(
+    _game: Chess,
+    _colour: "w" | "b"
+) {
     return []
 }

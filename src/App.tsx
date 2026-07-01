@@ -12,7 +12,6 @@ function App() {
     const [position, setPosition] = useState(chess.fen())
     const [moves, setMoves] = useState<string[]>([])
     const [currentMove, setCurrentMove] = useState(0)
-    const [controlledSquares, setControlledSquares] = useState<string[]>([])
     const [controlMap, setControlMap] = useState<ControlMap>({})
     const [showPawns, setShowPawns] = useState(true)
     const [showKnights, setShowKnights] = useState(true)
