@@ -3,7 +3,6 @@ import { Chessboard } from "react-chessboard"
 import { Chess } from "chess.js"
 import {
     getControlMap,
-    getControlledSquares,
     type ControlMap,
 } from "./utils/chesshelpers"
 function App() {
