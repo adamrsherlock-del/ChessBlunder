@@ -85,7 +85,9 @@ function App() {
 
 
 
-                    setControlledSquares(getControlledSquares(newChess, "w"))
+                    const newControlMap = getControlMap(newChess, "w")
+                    setControlMap(newControlMap)
+
 
                     const gameMoves = newChess.history()
 
