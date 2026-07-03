@@ -40,25 +40,33 @@ export default function ReplayControls({
 
     return (
 
-        <div className="flex gap-3 mt-4">
+        <>
+            {/* Show the current replay position */}
+            <p className="text-sm text-slate-400">
+                Move {currentMove} / {totalMoves}
+            </p>
 
-            <button onClick={onFirst}>
-                |◀
-            </button>
+            <div className="flex gap-3 mt-2">
 
-            <button onClick={onPrevious}>
-                ◀ Previous
-            </button>
+                <button onClick={onFirst}>
+                    |◀
+                </button>
 
-            <button onClick={onNext}>
-                Next ▶
-            </button>
+                <button onClick={onPrevious}>
+                    ◀ Previous
+                </button>
 
-            <button onClick={onLast}>
-                ▶|
-            </button>
+                <button onClick={onNext}>
+                    Next ▶
+                </button>
 
-        </div>
+                <button onClick={onLast}>
+                    ▶|
+                </button>
+
+            </div>
+
+        </>
 
     )
 }
