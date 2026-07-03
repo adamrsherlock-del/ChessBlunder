@@ -1,22 +1,37 @@
 type Props = {
-    position: string
     movesLoaded: number
     currentMove: number
     controlledSquares: number
 }
 
 export default function GameInfoPanel({
-    position,
     movesLoaded,
     currentMove,
     controlledSquares,
 }: Props) {
     return (
-        <>
-            <p>{position}</p>
-            <p>Moves loaded: {movesLoaded}</p>
-            <p>Current move: {currentMove}</p>
-            <p>Controlled squares: {controlledSquares}</p>
-        </>
+        <div>
+
+            <h3 className="text-lg font-semibold mb-3">
+                Information
+            </h3>
+
+            <div className="space-y-2 text-sm">
+
+                <p>
+                    <strong>Moves loaded:</strong> {movesLoaded}
+                </p>
+
+                <p>
+                    <strong>Current move:</strong> {currentMove}
+                </p>
+
+                <p>
+                    <strong>Controlled squares:</strong> {controlledSquares}
+                </p>
+
+            </div>
+
+        </div>
     )
 }

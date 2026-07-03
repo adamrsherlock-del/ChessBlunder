@@ -1,23 +1,50 @@
-type Props = {
+// ===============================
+// ReplayControls
+//
+// These buttons allow the user to
+// move backwards and forwards
+// through the game.
+//
+// The component doesn't know HOW
+// replay works.
+//
+// It simply calls functions that
+// App.tsx gives it.
+// ===============================
+
+type ReplayControlsProps = {
+
+    // Which move are we currently viewing?
     currentMove: number
+
+    // Total number of moves in the game
     totalMoves: number
-    onStart: () => void
+
+    // Functions supplied by App.tsx
+    onFirst: () => void
     onPrevious: () => void
     onNext: () => void
-    onEnd: () => void
+    onLast: () => void
 }
 
 export default function ReplayControls({
+
     currentMove,
     totalMoves,
-    onStart,
+    onFirst,
     onPrevious,
     onNext,
-    onEnd,
-}: Props) {
+    onLast,
+
+}: ReplayControlsProps) {
+
     return (
-        <div className="flex gap-2">
-            <button onClick={onStart}>|◀</button>
+
+        <div className="flex gap-3 mt-4">
+
+            <button onClick={onFirst}>
+                |◀
+            </button>
 
             <button onClick={onPrevious}>
                 ◀ Previous
@@ -27,9 +54,11 @@ export default function ReplayControls({
                 Next ▶
             </button>
 
-            <button onClick={onEnd}>
+            <button onClick={onLast}>
                 ▶|
             </button>
+
         </div>
+
     )
 }

@@ -1,10 +1,25 @@
 import { useState } from "react"
-import { Chessboard } from "react-chessboard"
 import { Chess } from "chess.js"
-import {
-    getControlMap,
-    type ControlMap,
-} from "./utils/chesshelpers"
+import Header from "./components/Header.tsx"
+import ChessBoardPanel from "./components/ChessBoardPanel"
+import GameInfoPanel from "./components/GameInfoPanel"
+// Displays the filter checkboxes
+import ControlFilters from "./components/ControlFilters"
+import PGNLoader from "./components/PGNLoader"
+// Buttons used to replay the game
+import ReplayControls from "./components/ReplayControls"
+import Sidebar from "./components/Sidebar"
+// Utility that decides which board squares should be highlighted
+import { getSquareStyles } from "./utils/getSquareStyles"
+// ---------------------------------------------------------
+// Creates the blue highlights shown on the chessboard
+// based on which filters are currently enabled.
+// ---------------------------------------------------------
+// Replay a game to any move and calculate the board state
+import { goToMove } from "./utils/goToMove"
+
+import type { ControlMap } from "./utils/chesshelpers"
+
 function App() {
     const [pgn, setPgn] = useState("")
     const [chess] = useState(new Chess())
@@ -22,225 +37,204 @@ function App() {
     const [showBlack, setShowBlack] = useState(true)
     const [flipBoard, setFlipBoard] = useState(false)
 
-    function goToMove(moveNumber: number, moveList: string[]) {
-        const replayChess = new Chess()
+    // ---------------------------------------------------------
+    // Move the replay board to any point in the game.
+    //
+    // The utility calculates the position and control map.
+    // This helper simply updates React state with the result.
+    // ---------------------------------------------------------
+    function updateBoard(moveNumber: number, moveList: string[]) {
 
-        for (let i = 0; i < moveNumber; i++) {
-            replayChess.move(moveList[i])
-        }
+        const result = goToMove(moveNumber, moveList)
 
-        setPosition(replayChess.fen())
-
-        const whiteControl = getControlMap(replayChess, "w")
-        const blackControl = getControlMap(replayChess, "b")
-
-        setControlMap({
-            ...whiteControl,
-            ...blackControl,
-        })
+        setPosition(result.position)
+        setControlMap(result.controlMap)
     }
 
-    const squareStyles: { [square: string]: React.CSSProperties } = {}
+    // ---------------------------------------------------------
+    // Load a PGN entered by the user.
+    //
+    // 1. Read the PGN
+    // 2. Save every move
+    // 3. Reset replay to move 0
+    // 4. Update the board
+    // ---------------------------------------------------------
+    function loadGame() {
 
-    for (const square of Object.keys(controlMap)) {
-        const attacks = controlMap[square]
+        const newChess = new Chess()
 
-        const shouldShow = attacks.some((attack) => {
-            if (attack.colour === "w" && !showWhite) return false
-            if (attack.colour === "b" && !showBlack) return false
+        // Read the PGN into a chess game
+        newChess.loadPgn(pgn)
 
-            if (attack.piece === "p" && showPawns) return true
-            if (attack.piece === "n" && showKnights) return true
-            if (attack.piece === "b" && showBishops) return true
-            if (attack.piece === "r" && showRooks) return true
-            if (attack.piece === "q" && showQueens) return true
-            if (attack.piece === "k" && showKings) return true
+        // Get every move from the game
+        const gameMoves = newChess.history()
 
-            return false
-        })
+        // Save the moves
+        setMoves(gameMoves)
 
-        if (!shouldShow) continue
+        // Start replay from the beginning
+        setCurrentMove(0)
 
-        squareStyles[square] = {
-            backgroundColor: "rgba(0, 100, 255, 0.35)",
+        // Show the starting position
+        updateBoard(0, gameMoves)
+    }
+
+
+    // ---------------------------------------------------------
+    // Jump to the first move
+    // ---------------------------------------------------------
+    function firstMove() {
+
+        setCurrentMove(0)
+
+        updateBoard(0, moves)
+
+    }
+
+    // ---------------------------------------------------------
+    // Go back one move
+    // ---------------------------------------------------------
+    function previousMove() {
+
+        if (currentMove > 0) {
+
+            const move = currentMove - 1
+
+            setCurrentMove(move)
+
+            updateBoard(move, moves)
+
         }
     }
 
+    // ---------------------------------------------------------
+    // Go forward one move
+    // ---------------------------------------------------------
+    function nextMove() {
+
+        console.log("Next clicked")
+
+        if (currentMove < moves.length) {
+
+            const move = currentMove + 1
+
+            setCurrentMove(move)
+
+            updateBoard(move, moves)
+
+        }
+    }
+
+    // ---------------------------------------------------------
+    // Jump to the final move
+    // ---------------------------------------------------------
+    function lastMove() {
+
+        setCurrentMove(moves.length)
+
+        updateBoard(moves.length, moves)
+
+    }
+    // ---------------------------------------------------------
+    // Decide which board squares should be highlighted
+    // ---------------------------------------------------------
+    const squareStyles = getSquareStyles(
+        controlMap,
+        showPawns,
+        showKnights,
+        showBishops,
+        showRooks,
+        showQueens,
+        showKings,
+        showWhite,
+        showBlack
+    )
     return (
-        <div style={{ width: "500px" }}>
-            <h1>ChessBlunder</h1>
+        <div className="min-h-screen bg-slate-900 text-white">
+            <Header />
 
-            <textarea
-                placeholder="Paste your Chess.com PGN here"
-                value={pgn}
-                onChange={(event) => setPgn(event.target.value)}
-            />
+            <div className="flex">
 
-            <button
-                onClick={() => {
-                    const newChess = new Chess()
+                <Sidebar />
 
-                    newChess.loadPgn(pgn)
+                {/* Main content */}
+                <div className="flex flex-1 p-8 gap-8">
 
 
 
-                    const newControlMap = getControlMap(newChess, "w")
-                    setControlMap(newControlMap)
 
 
-                    const gameMoves = newChess.history()
+                    {/* Stack all controls vertically */}
 
-                    setMoves(gameMoves)
-                    setCurrentMove(0)
-                    goToMove(0, gameMoves)
+                    {/* Main chess board */}
+                    <div className="flex-1 flex justify-center">
+
+                        <div style={{ width: "520px" }}>
+                            <ChessBoardPanel
+                                position={position}
+                                flipBoard={flipBoard}
+                                squareStyles={squareStyles}
+                            />
+                        </div>
+
+                    </div>
+
+                    {/* Right-hand control panel */}
+                    <div className="w-96 bg-slate-800 rounded-xl p-6 shadow-xl flex flex-col gap-6">
+                        <PGNLoader
+                            pgn={pgn}
+                            setPgn={setPgn}
+                            onLoadGame={loadGame}
+                        />
+
+                        <GameInfoPanel
+                            movesLoaded={moves.length}
+                            currentMove={currentMove}
+                            controlledSquares={Object.keys(controlMap).length}
+                        />
+
+                        <div style={{ marginBottom: "10px" }}>
+                            <ControlFilters
+                                showPawns={showPawns}
+                                setShowPawns={setShowPawns}
+                                showKnights={showKnights}
+                                setShowKnights={setShowKnights}
+                                showBishops={showBishops}
+                                setShowBishops={setShowBishops}
+                                showRooks={showRooks}
+                                setShowRooks={setShowRooks}
+                                showQueens={showQueens}
+                                setShowQueens={setShowQueens}
+                                showKings={showKings}
+                                setShowKings={setShowKings}
+                                showWhite={showWhite}
+                                setShowWhite={setShowWhite}
+                                showBlack={showBlack}
+                                setShowBlack={setShowBlack}
+                                flipBoard={flipBoard}
+                                setFlipBoard={setFlipBoard}
+                            />
+                        </div>
+
+                        <ReplayControls
+                            currentMove={currentMove}
+                            totalMoves={moves.length}
+                            onFirst={firstMove}
+                            onPrevious={previousMove}
+                            onNext={nextMove}
+                            onLast={lastMove}
+                        />
 
 
-
-                }}
-            >
-                Load Game
-            </button>
-
-            <p>{position}</p>
-            <p>Moves loaded: {moves.length}</p>
-            <p>Current move: {currentMove}</p>
-            <p>Controlled squares: {Object.keys(controlMap).length}</p>
-
-            <div style={{ marginBottom: "10px" }}>
-                <label>
-                    <input
-                        type="checkbox"
-                        checked={showPawns}
-                        onChange={(e) => setShowPawns(e.target.checked)}
-                    />
-                    Pawns
-                </label>
-
-                <label style={{ marginLeft: "20px" }}>
-                    <input
-                        type="checkbox"
-                        checked={showKnights}
-                        onChange={(e) => setShowKnights(e.target.checked)}
-                    />
-                    Knights
-                </label>
-
-                <label style={{ marginLeft: "20px" }}>
-                    <input
-                        type="checkbox"
-                        checked={showBishops}
-                        onChange={(e) => setShowBishops(e.target.checked)}
-                    />
-                    Bishops
-                </label>
-
-                <label style={{ marginLeft: "20px" }}>
-                    <input
-                        type="checkbox"
-                        checked={showRooks}
-                        onChange={(e) => setShowRooks(e.target.checked)}
-                    />
-                    Rooks
-                </label>
-
-                <label style={{ marginLeft: "20px" }}>
-                    <input
-                        type="checkbox"
-                        checked={showQueens}
-                        onChange={(e) => setShowQueens(e.target.checked)}
-                    />
-                    Queens
-                </label>
-
-                <label style={{ marginLeft: "20px" }}>
-                    <input
-                        type="checkbox"
-                        checked={showKings}
-                        onChange={(e) => setShowKings(e.target.checked)}
-                    />
-                    Kings
-                </label>
-
-                <label style={{ marginLeft: "20px" }}>
-                    <input
-                        type="checkbox"
-                        checked={showWhite}
-                        onChange={(e) => setShowWhite(e.target.checked)}
-                    />
-                    White
-                </label>
-
-                <label style={{ marginLeft: "20px" }}>
-                    <input
-                        type="checkbox"
-                        checked={showBlack}
-                        onChange={(e) => setShowBlack(e.target.checked)}
-                    />
-                    Black
-                </label>
-
-                <label style={{ marginLeft: "20px" }}>
-                    <input
-                        type="checkbox"
-                        checked={flipBoard}
-                        onChange={(e) => setFlipBoard(e.target.checked)}
-                    />
-                    Flip Board
-                </label>
-
+                    </div>
+                </div>
             </div>
-
-            <button
-                onClick={() => {
-                    setCurrentMove(0)
-                    goToMove(0, moves)
-                }}
-            >
-                |◀
-            </button>
-
-            <button
-                onClick={() => {
-                    if (currentMove > 0) {
-                        const previousMove = currentMove - 1
-                        setCurrentMove(previousMove)
-                        goToMove(previousMove, moves)
-                    }
-                }}
-            >
-                ◀ Previous
-            </button>
-
-            <button
-                onClick={() => {
-                    if (currentMove < moves.length) {
-                        const nextMove = currentMove + 1
-                        setCurrentMove(nextMove)
-                        goToMove(nextMove, moves)
-                    }
-                }}
-            >
-                Next ▶
-            </button>
-
-            <button
-                onClick={() => {
-                    setCurrentMove(moves.length)
-                    goToMove(moves.length, moves)
-                }}
-            >
-                ▶|
-            </button>
-
-            <Chessboard
-                key={position}
-                position={position}
-                boardOrientation={flipBoard ? "black" : "white"}
-                customSquareStyles={squareStyles}
-            />
-
         </div>
+
+
+
+
     )
 }
 
-export default App
+export default App;
