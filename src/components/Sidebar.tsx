@@ -1,17 +1,31 @@
-export default function Sidebar() {
+type Props = {
+    page: "vision" | "threats"
+    setPage: (page: "vision" | "threats") => void
+}
+
+export default function Sidebar({ page, setPage }: Props) {
     return (
         <aside className="w-64 border-r border-slate-700 p-6">
-            <button className="w-full rounded-lg bg-violet-600 p-4 text-left mb-3">
+            <button
+                onClick={() => setPage("vision")}
+                className={`w-full rounded-lg p-4 text-left mb-3 ${page === "vision"
+                    ? "bg-violet-600"
+                    : "bg-slate-800 hover:bg-slate-700"
+                    }`}
+            >
                 👁 Vision
             </button>
 
-            <button className="w-full p-4 text-left text-slate-300">
-                🎯 Control
-            </button>
 
-            <button className="w-full p-4 text-left text-slate-500">
+
+            <button
+                onClick={() => setPage("threats")}
+                className={`w-full rounded-lg p-4 text-left mb-3 ${page === "threats"
+                        ? "bg-violet-600"
+                        : "bg-slate-800 hover:bg-slate-700"
+                    }`}
+            >
                 ⚠ Threats
-                <div className="text-xs">Coming Soon</div>
             </button>
 
             <button className="w-full p-4 text-left text-slate-500">
