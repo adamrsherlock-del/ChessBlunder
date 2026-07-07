@@ -37,6 +37,7 @@ export function goToMove(
 
     // Return everything the UI needs
     return {
+        chess: replayChess,
         position: replayChess.fen(),
         controlMap,
     }

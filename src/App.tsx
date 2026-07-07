@@ -3,27 +3,26 @@ import { Chess } from "chess.js"
 import Header from "./components/Header.tsx"
 import ChessBoardPanel from "./components/ChessBoardPanel"
 import GameInfoPanel from "./components/GameInfoPanel"
-// Displays the filter checkboxes
 import ControlFilters from "./components/ControlFilters"
 import PGNLoader from "./components/PGNLoader"
-// Buttons used to replay the game
 import ReplayControls from "./components/ReplayControls"
 import Sidebar from "./components/Sidebar"
-// Utility that decides which board squares should be highlighted
 import { getSquareStyles } from "./utils/getSquareStyles"
-// ---------------------------------------------------------
-// Creates the blue highlights shown on the chessboard
-// based on which filters are currently enabled.
-// ---------------------------------------------------------
-// Replay a game to any move and calculate the board state
 import { goToMove } from "./utils/goToMove"
-
 import type { ControlMap } from "./utils/chesshelpers"
 import ThreatsPage from "./pages/ThreatsPage"
+import { getThreatMap } from "./utils/getThreatMap"
+import ReplayPanel from "./components/ReplayPanel"
+import { getThreatSquareStyles } from "./utils/getThreatSquareStyles"
+import ThreatFilters from "./components/ThreatFilters"
+import { getAttackArrows } from "./utils/getAttackArrows"
+
+
 
 function App() {
     const [pgn, setPgn] = useState("")
     const [chess] = useState(new Chess())
+    const [currentChess, setCurrentChess] = useState(new Chess())
     const [position, setPosition] = useState(chess.fen())
     const [moves, setMoves] = useState<string[]>([])
     const [currentMove, setCurrentMove] = useState(0)
@@ -35,9 +34,17 @@ function App() {
     const [showQueens, setShowQueens] = useState(true)
     const [showKings, setShowKings] = useState(true)
     const [showWhite, setShowWhite] = useState(true)
+    // Threat filter settings
+    const [showWhiteThreats, setShowWhiteThreats] = useState(true)
+    const [showBlackThreats, setShowBlackThreats] = useState(true)
+
+    const [showHanging, setShowHanging] = useState(true)
+    const [showAttacked, setShowAttacked] = useState(true)
+    const [showDefended, setShowDefended] = useState(true)
+    const [showAttackArrows, setShowAttackArrows] = useState(false)
+    const [showDefenceArrows, setShowDefenceArrows] = useState(false)
     const [showBlack, setShowBlack] = useState(true)
     const [flipBoard, setFlipBoard] = useState(false)
-    // Which page is currently being shown?
     const [page, setPage] = useState<"vision" | "threats">("vision")
 
     // ---------------------------------------------------------
@@ -52,6 +59,7 @@ function App() {
 
         setPosition(result.position)
         setControlMap(result.controlMap)
+        setCurrentChess(result.chess)
     }
 
     // ---------------------------------------------------------
@@ -141,7 +149,7 @@ function App() {
     // ---------------------------------------------------------
     // Decide which board squares should be highlighted
     // ---------------------------------------------------------
-    const squareStyles = getSquareStyles(
+    const visionSquareStyles = getSquareStyles(
         controlMap,
         showPawns,
         showKnights,
@@ -152,6 +160,26 @@ function App() {
         showWhite,
         showBlack
     )
+
+
+
+    const threats = getThreatMap(currentChess)
+
+    const threatSquareStyles = getThreatSquareStyles(
+        threats,
+        showWhiteThreats,
+        showBlackThreats,
+        showHanging,
+        showAttacked,
+        showDefended
+    )
+
+    const attackArrows = showAttackArrows
+        ? getAttackArrows(threats)
+        : []
+
+
+
     return (
         <div className="min-h-screen bg-slate-900 text-white">
             <Header />
@@ -166,81 +194,125 @@ function App() {
                 {/* Main content */}
                 <div className="flex flex-1 p-8 gap-8">
 
-                    {page === "vision" && (
+                    {/* Main chess board */}
+                    <div className="flex-1 flex justify-center">
 
-                        <>
+                        <div style={{ width: "520px" }}>
+                            <ChessBoardPanel
+                                position={position}
+                                flipBoard={flipBoard}
+                                squareStyles={
+                                    page === "vision"
+                                        ? visionSquareStyles
+                                        : threatSquareStyles
+                                }
+                                arrows={attackArrows}
+                            />
+                        </div>
 
-                            {/* Main chess board */}
-                            <div className="flex-1 flex justify-center">
+                    </div>
 
-                                <div style={{ width: "520px" }}>
-                                    <ChessBoardPanel
-                                        position={position}
-                                        flipBoard={flipBoard}
-                                        squareStyles={squareStyles}
-                                    />
-                                </div>
 
-                            </div>
 
-                            {/* Right-hand control panel */}
-                            <div className="w-96 bg-slate-800 rounded-xl p-6 shadow-xl flex flex-col gap-6">
 
-                                <PGNLoader
-                                    pgn={pgn}
-                                    setPgn={setPgn}
-                                    onLoadGame={loadGame}
+
+
+                    {/* Right-hand control panel */}
+                    <ReplayPanel>
+
+                        <PGNLoader
+                            pgn={pgn}
+                            setPgn={setPgn}
+                            onLoadGame={loadGame}
+                        />
+
+                        <GameInfoPanel
+                            movesLoaded={moves.length}
+                            currentMove={currentMove}
+                            controlledSquares={Object.keys(controlMap).length}
+                        />
+
+                        <div style={{ marginBottom: "10px" }}>
+
+                        </div>
+
+                        <ReplayControls
+                            currentMove={currentMove}
+                            totalMoves={moves.length}
+                            onFirst={firstMove}
+                            onPrevious={previousMove}
+                            onNext={nextMove}
+                            onLast={lastMove}
+                        />
+
+                        {page === "vision" && (
+
+                            <ControlFilters
+                                showPawns={showPawns}
+                                setShowPawns={setShowPawns}
+                                showKnights={showKnights}
+                                setShowKnights={setShowKnights}
+                                showBishops={showBishops}
+                                setShowBishops={setShowBishops}
+                                showRooks={showRooks}
+                                setShowRooks={setShowRooks}
+                                showQueens={showQueens}
+                                setShowQueens={setShowQueens}
+                                showKings={showKings}
+                                setShowKings={setShowKings}
+                                showWhite={showWhite}
+                                setShowWhite={setShowWhite}
+                                showBlack={showBlack}
+                                setShowBlack={setShowBlack}
+                                flipBoard={flipBoard}
+                                setFlipBoard={setFlipBoard}
+                            />
+
+                        )}
+
+                        {page === "threats" && (
+
+                            <>
+
+                                <ThreatFilters
+                                    showWhiteThreats={showWhiteThreats}
+                                    setShowWhiteThreats={setShowWhiteThreats}
+                                    showBlackThreats={showBlackThreats}
+                                    setShowBlackThreats={setShowBlackThreats}
+                                    showHanging={showHanging}
+                                    setShowHanging={setShowHanging}
+                                    showAttacked={showAttacked}
+                                    setShowAttacked={setShowAttacked}
+                                    showDefended={showDefended}
+                                    setShowDefended={setShowDefended}
+                                    showAttackArrows={showAttackArrows}
+                                    setShowAttackArrows={setShowAttackArrows}
+
+                                    showDefenceArrows={showDefenceArrows}
+                                    setShowDefenceArrows={setShowDefenceArrows}
                                 />
 
-                                <GameInfoPanel
-                                    movesLoaded={moves.length}
-                                    currentMove={currentMove}
-                                    controlledSquares={Object.keys(controlMap).length}
+                                <ThreatsPage
+                                    threats={threats}
+                                    showWhiteThreats={showWhiteThreats}
+                                    showBlackThreats={showBlackThreats}
+                                    showHanging={showHanging}
+                                    showAttacked={showAttacked}
+                                    showDefended={showDefended}
                                 />
 
-                                <div style={{ marginBottom: "10px" }}>
-                                    <ControlFilters
-                                        showPawns={showPawns}
-                                        setShowPawns={setShowPawns}
-                                        showKnights={showKnights}
-                                        setShowKnights={setShowKnights}
-                                        showBishops={showBishops}
-                                        setShowBishops={setShowBishops}
-                                        showRooks={showRooks}
-                                        setShowRooks={setShowRooks}
-                                        showQueens={showQueens}
-                                        setShowQueens={setShowQueens}
-                                        showKings={showKings}
-                                        setShowKings={setShowKings}
-                                        showWhite={showWhite}
-                                        setShowWhite={setShowWhite}
-                                        showBlack={showBlack}
-                                        setShowBlack={setShowBlack}
-                                        flipBoard={flipBoard}
-                                        setFlipBoard={setFlipBoard}
-                                    />
-                                </div>
+                            </>
 
-                                <ReplayControls
-                                    currentMove={currentMove}
-                                    totalMoves={moves.length}
-                                    onFirst={firstMove}
-                                    onPrevious={previousMove}
-                                    onNext={nextMove}
-                                    onLast={lastMove}
-                                />
+                        )}
 
-                            </div>
 
-                        </>
+                    </ReplayPanel>
 
-                    )}
 
-                    {page === "threats" && (
 
-                        <ThreatsPage />
 
-                    )}
+
+
 
                 </div>
             </div>
