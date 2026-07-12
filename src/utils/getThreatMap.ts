@@ -3,16 +3,23 @@ import { getControlMap } from "./chesshelpers"
 import type { Attack } from "./chesshelpers"
 
 export type Threat = {
+
     square: string
+
     colour: "w" | "b"
+
     piece: string
 
     attacked: boolean
+
     defended: boolean
+
     hanging: boolean
 
     attackers: Attack[]
+
     defenders: Attack[]
+
 }
 
 export function getThreatMap(chess: Chess): Threat[] {

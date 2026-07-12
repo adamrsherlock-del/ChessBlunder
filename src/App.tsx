@@ -16,6 +16,7 @@ import ReplayPanel from "./components/ReplayPanel"
 import { getThreatSquareStyles } from "./utils/getThreatSquareStyles"
 import ThreatFilters from "./components/ThreatFilters"
 import { getAttackArrows } from "./utils/getAttackArrows"
+import { getDefenceArrows } from "./utils/getDefenceArrows"
 
 
 
@@ -34,10 +35,8 @@ function App() {
     const [showQueens, setShowQueens] = useState(true)
     const [showKings, setShowKings] = useState(true)
     const [showWhite, setShowWhite] = useState(true)
-    // Threat filter settings
     const [showWhiteThreats, setShowWhiteThreats] = useState(true)
     const [showBlackThreats, setShowBlackThreats] = useState(true)
-
     const [showHanging, setShowHanging] = useState(true)
     const [showAttacked, setShowAttacked] = useState(true)
     const [showDefended, setShowDefended] = useState(true)
@@ -45,7 +44,9 @@ function App() {
     const [showDefenceArrows, setShowDefenceArrows] = useState(false)
     const [showBlack, setShowBlack] = useState(true)
     const [flipBoard, setFlipBoard] = useState(false)
-    const [page, setPage] = useState<"vision" | "threats">("vision")
+    const [page, setPage] = useState<"vision" | "threats">("threats")
+    const [selectedThreat, setSelectedThreat] = useState<string | null>(null)
+
 
     // ---------------------------------------------------------
     // Move the replay board to any point in the game.
@@ -165,6 +166,14 @@ function App() {
 
     const threats = getThreatMap(currentChess)
 
+    const selectedThreatData =
+        threats.find(threat => threat.square === selectedThreat) ?? null
+    console.log("Selected threat:", selectedThreatData)
+
+    const defenceArrows = showDefenceArrows
+        ? getDefenceArrows(selectedThreatData)
+        : []
+
     const threatSquareStyles = getThreatSquareStyles(
         threats,
         showWhiteThreats,
@@ -175,8 +184,10 @@ function App() {
     )
 
     const attackArrows = showAttackArrows
-        ? getAttackArrows(threats)
+        ? getAttackArrows(selectedThreatData)
         : []
+
+    console.log("Attack arrows:", attackArrows)
 
 
 
@@ -197,17 +208,36 @@ function App() {
                     {/* Main chess board */}
                     <div className="flex-1 flex justify-center">
 
-                        <div style={{ width: "520px" }}>
-                            <ChessBoardPanel
-                                position={position}
-                                flipBoard={flipBoard}
-                                squareStyles={
-                                    page === "vision"
-                                        ? visionSquareStyles
-                                        : threatSquareStyles
-                                }
-                                arrows={attackArrows}
+                        <div className="flex flex-col items-center gap-6">
+
+                            <div style={{ width: "720px" }}>
+                                <ChessBoardPanel
+                                    position={position}
+                                    flipBoard={flipBoard}
+                                    squareStyles={
+                                        page === "vision"
+                                            ? visionSquareStyles
+                                            : threatSquareStyles
+                                    }
+                                    arrows={[
+                                        ...attackArrows,
+                                        ...defenceArrows,
+                                    ]}
+                                    onSquareClick={(square) => {
+                                        setSelectedThreat(square)
+                                    }}
+                                />
+                            </div>
+
+                            <ReplayControls
+                                currentMove={currentMove}
+                                totalMoves={moves.length}
+                                onFirst={firstMove}
+                                onPrevious={previousMove}
+                                onNext={nextMove}
+                                onLast={lastMove}
                             />
+
                         </div>
 
                     </div>
@@ -218,7 +248,24 @@ function App() {
 
 
                     {/* Right-hand control panel */}
+
                     <ReplayPanel>
+
+                        {page === "threats" && (
+                            <>
+                                <ThreatsPage
+                                    threats={threats}
+                                    selectedThreat={selectedThreatData}
+                                    showWhiteThreats={showWhiteThreats}
+                                    showBlackThreats={showBlackThreats}
+                                    showHanging={showHanging}
+                                    showAttacked={showAttacked}
+                                    showDefended={showDefended}
+                                />
+
+                                <hr className="border-slate-700 my-6" />
+                            </>
+                        )}
 
                         <PGNLoader
                             pgn={pgn}
@@ -229,24 +276,11 @@ function App() {
                         <GameInfoPanel
                             movesLoaded={moves.length}
                             currentMove={currentMove}
-                            controlledSquares={Object.keys(controlMap).length}
                         />
 
-                        <div style={{ marginBottom: "10px" }}>
-
-                        </div>
-
-                        <ReplayControls
-                            currentMove={currentMove}
-                            totalMoves={moves.length}
-                            onFirst={firstMove}
-                            onPrevious={previousMove}
-                            onNext={nextMove}
-                            onLast={lastMove}
-                        />
+                        <hr className="border-slate-700 my-6" />
 
                         {page === "vision" && (
-
                             <ControlFilters
                                 showPawns={showPawns}
                                 setShowPawns={setShowPawns}
@@ -267,44 +301,26 @@ function App() {
                                 flipBoard={flipBoard}
                                 setFlipBoard={setFlipBoard}
                             />
-
                         )}
 
                         {page === "threats" && (
-
-                            <>
-
-                                <ThreatFilters
-                                    showWhiteThreats={showWhiteThreats}
-                                    setShowWhiteThreats={setShowWhiteThreats}
-                                    showBlackThreats={showBlackThreats}
-                                    setShowBlackThreats={setShowBlackThreats}
-                                    showHanging={showHanging}
-                                    setShowHanging={setShowHanging}
-                                    showAttacked={showAttacked}
-                                    setShowAttacked={setShowAttacked}
-                                    showDefended={showDefended}
-                                    setShowDefended={setShowDefended}
-                                    showAttackArrows={showAttackArrows}
-                                    setShowAttackArrows={setShowAttackArrows}
-
-                                    showDefenceArrows={showDefenceArrows}
-                                    setShowDefenceArrows={setShowDefenceArrows}
-                                />
-
-                                <ThreatsPage
-                                    threats={threats}
-                                    showWhiteThreats={showWhiteThreats}
-                                    showBlackThreats={showBlackThreats}
-                                    showHanging={showHanging}
-                                    showAttacked={showAttacked}
-                                    showDefended={showDefended}
-                                />
-
-                            </>
-
+                            <ThreatFilters
+                                showWhiteThreats={showWhiteThreats}
+                                setShowWhiteThreats={setShowWhiteThreats}
+                                showBlackThreats={showBlackThreats}
+                                setShowBlackThreats={setShowBlackThreats}
+                                showHanging={showHanging}
+                                setShowHanging={setShowHanging}
+                                showAttacked={showAttacked}
+                                setShowAttacked={setShowAttacked}
+                                showDefended={showDefended}
+                                setShowDefended={setShowDefended}
+                                showAttackArrows={showAttackArrows}
+                                setShowAttackArrows={setShowAttackArrows}
+                                showDefenceArrows={showDefenceArrows}
+                                setShowDefenceArrows={setShowDefenceArrows}
+                            />
                         )}
-
 
                     </ReplayPanel>
 
