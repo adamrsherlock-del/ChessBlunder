@@ -17,6 +17,7 @@ import { getThreatSquareStyles } from "./utils/getThreatSquareStyles"
 import ThreatFilters from "./components/ThreatFilters"
 import { getAttackArrows } from "./utils/getAttackArrows"
 import { getDefenceArrows } from "./utils/getDefenceArrows"
+import { demoGame } from "./data/demoGame"
 
 
 
@@ -71,15 +72,15 @@ function App() {
     // 3. Reset replay to move 0
     // 4. Update the board
     // ---------------------------------------------------------
-    function loadGame() {
+    function loadGameFromPgn(gamePgn: string) {
 
-        const newChess = new Chess()
+        const chess = new Chess()
 
         // Read the PGN into a chess game
-        newChess.loadPgn(pgn)
+        chess.loadPgn(gamePgn)
 
         // Get every move from the game
-        const gameMoves = newChess.history()
+        const gameMoves = chess.history()
 
         // Save the moves
         setMoves(gameMoves)
@@ -90,6 +91,17 @@ function App() {
         // Show the starting position
         updateBoard(0, gameMoves)
     }
+
+    function loadGame() {
+        loadGameFromPgn(pgn)
+    }
+
+    function loadDemoGame() {
+        loadGameFromPgn(demoGame)
+        setPgn(demoGame)
+        setPage("threats")
+    }
+
 
 
     // ---------------------------------------------------------
@@ -271,6 +283,7 @@ function App() {
                             pgn={pgn}
                             setPgn={setPgn}
                             onLoadGame={loadGame}
+                            onLoadDemoGame={loadDemoGame}
                         />
 
                         <GameInfoPanel
