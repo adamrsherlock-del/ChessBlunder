@@ -47,6 +47,11 @@ function App() {
     const [flipBoard, setFlipBoard] = useState(false)
     const [page, setPage] = useState<"vision" | "threats">("threats")
     const [selectedThreat, setSelectedThreat] = useState<string | null>(null)
+    const [lastMoveSquares, setLastMoveSquares] = useState<{
+        from: string
+        to: string
+    } | null>(null)
+
 
 
     // ---------------------------------------------------------
@@ -62,6 +67,15 @@ function App() {
         setPosition(result.position)
         setControlMap(result.controlMap)
         setCurrentChess(result.chess)
+
+        if (result.lastMove) {
+            setLastMoveSquares({
+                from: result.lastMove.from,
+                to: result.lastMove.to,
+            })
+        } else {
+            setLastMoveSquares(null)
+        }
     }
 
     // ---------------------------------------------------------
@@ -194,6 +208,28 @@ function App() {
         showAttacked,
         showDefended
     )
+    const moveHighlightStyles =
+        lastMoveSquares
+            ? {
+                [lastMoveSquares.from]: {
+                    backgroundColor: "rgba(255, 215, 0, 0.55)",
+                },
+                [lastMoveSquares.to]: {
+                    backgroundColor: "rgba(50, 205, 50, 0.55)",
+                },
+            }
+            : {}
+
+    const boardSquareStyles =
+        page === "vision"
+            ? {
+                ...visionSquareStyles,
+                ...moveHighlightStyles,
+            }
+            : {
+                ...threatSquareStyles,
+                ...moveHighlightStyles,
+            }
 
     const attackArrows = showAttackArrows
         ? getAttackArrows(selectedThreatData)
@@ -226,11 +262,7 @@ function App() {
                                 <ChessBoardPanel
                                     position={position}
                                     flipBoard={flipBoard}
-                                    squareStyles={
-                                        page === "vision"
-                                            ? visionSquareStyles
-                                            : threatSquareStyles
-                                    }
+                                    squareStyles={boardSquareStyles}
                                     arrows={[
                                         ...attackArrows,
                                         ...defenceArrows,

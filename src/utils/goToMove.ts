@@ -35,10 +35,18 @@ export function goToMove(
         ...blackControl,
     }
 
+    // Work out the last move played
+    const lastMove =
+        moveNumber > 0
+            ? replayChess.history({ verbose: true })[moveNumber - 1]
+            : null
+
     // Return everything the UI needs
     return {
         chess: replayChess,
         position: replayChess.fen(),
         controlMap,
+        lastMove,
     }
+
 }
