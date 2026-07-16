@@ -18,6 +18,7 @@ import ThreatFilters from "./components/ThreatFilters"
 import { getAttackArrows } from "./utils/getAttackArrows"
 import { getDefenceArrows } from "./utils/getDefenceArrows"
 import { demoGame } from "./data/demoGame"
+import WelcomeModal from "./components/WelcomeModal"
 
 
 
@@ -51,6 +52,9 @@ function App() {
         from: string
         to: string
     } | null>(null)
+    const [showWelcome, setShowWelcome] = useState(
+        localStorage.getItem("welcomeSeen") !== "true"
+    )
 
 
 
@@ -116,6 +120,12 @@ function App() {
         setPage("threats")
     }
 
+    function startWelcomeDemo() {
+        localStorage.setItem("welcomeSeen", "true")
+        setShowWelcome(false)
+
+        loadDemoGame()
+    }
 
 
     // ---------------------------------------------------------
@@ -377,6 +387,13 @@ function App() {
 
                 </div>
             </div>
+
+            {showWelcome && (
+                <WelcomeModal
+                    onGetStarted={startWelcomeDemo}
+                />
+            )}
+
         </div>
 
 
