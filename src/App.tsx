@@ -19,6 +19,7 @@ import { getAttackArrows } from "./utils/getAttackArrows"
 import { getDefenceArrows } from "./utils/getDefenceArrows"
 import { demoGame } from "./data/demoGame"
 import WelcomeModal from "./components/WelcomeModal"
+import LandingPage from "./pages/LandingPage"
 
 
 
@@ -55,6 +56,7 @@ function App() {
     const [showWelcome, setShowWelcome] = useState(
         localStorage.getItem("welcomeSeen") !== "true"
     )
+    const [showLandingPage, setShowLandingPage] = useState(true)
 
 
 
@@ -118,6 +120,15 @@ function App() {
         loadGameFromPgn(demoGame)
         setPgn(demoGame)
         setPage("threats")
+    }
+
+    function handleTryDemo() {
+        setShowLandingPage(false)
+        loadDemoGame()
+    }
+
+    function handleAnalyseGame() {
+        setShowLandingPage(false)
     }
 
     function startWelcomeDemo() {
@@ -247,7 +258,14 @@ function App() {
 
     console.log("Attack arrows:", attackArrows)
 
-
+    if (showLandingPage) {
+        return (
+            <LandingPage
+                onTryDemo={handleTryDemo}
+                onAnalyseGame={handleAnalyseGame}
+            />
+        )
+    }
 
     return (
         <div className="min-h-screen bg-slate-900 text-white">
